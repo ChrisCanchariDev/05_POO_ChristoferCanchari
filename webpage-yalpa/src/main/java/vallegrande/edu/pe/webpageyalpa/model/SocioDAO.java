@@ -7,25 +7,25 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProductoDAO {
+public class SocioDAO {
 
-    public List<Producto> listar() {
-        List<Producto> lista = new ArrayList<>();
-        String sql = "SELECT * FROM productos";
+    public List<Socio> listar() {
+        List<Socio> lista = new ArrayList<>();
+        String sql = "SELECT * FROM socios";
 
         try (Connection con = Conexion.conectar();
              Statement st = con.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
-                Producto p = new Producto(
+                Socio s = new Socio(
                         rs.getInt("id"),
                         rs.getString("nombre"),
-                        rs.getString("categoria"),
-                        rs.getDouble("precio"),
-                        rs.getInt("stock")
+                        rs.getString("apellido"),
+                        rs.getString("correo"),
+                        rs.getString("estado")
                 );
-                lista.add(p);
+                lista.add(s);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -33,17 +33,16 @@ public class ProductoDAO {
         return lista;
     }
 
-
-    public boolean insertar(Producto producto) {
-        String sql = "INSERT INTO productos (nombre, categoria, precio, stock) VALUES (?, ?, ?, ?)";
+    public boolean insertar(Socio socio) {
+        String sql = "INSERT INTO socios (nombre, apellido, correo, estado) VALUES (?, ?, ?, ?)";
 
         try (Connection con = Conexion.conectar();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, producto.getNombre());
-            ps.setString(2, producto.getCategoria());
-            ps.setDouble(3, producto.getPrecio());
-            ps.setInt(4, producto.getStock());
+            ps.setString(1, socio.getNombre());
+            ps.setString(2, socio.getApellido());
+            ps.setString(3, socio.getCorreo());
+            ps.setString(4, socio.getEstado());
 
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
