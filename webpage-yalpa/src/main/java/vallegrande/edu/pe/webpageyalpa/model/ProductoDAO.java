@@ -18,14 +18,13 @@ public class ProductoDAO {
              ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
-                Producto p = new Producto(
+                lista.add(new Producto(
                         rs.getInt("id"),
                         rs.getString("nombre"),
                         rs.getString("categoria"),
                         rs.getDouble("precio"),
                         rs.getInt("stock")
-                );
-                lista.add(p);
+                ));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -33,18 +32,47 @@ public class ProductoDAO {
         return lista;
     }
 
-
-    public boolean insertar(Producto producto) {
+    public boolean insertar(Producto p) {
         String sql = "INSERT INTO productos (nombre, categoria, precio, stock) VALUES (?, ?, ?, ?)";
-
         try (Connection con = Conexion.conectar();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, producto.getNombre());
-            ps.setString(2, producto.getCategoria());
-            ps.setDouble(3, producto.getPrecio());
-            ps.setInt(4, producto.getStock());
+            ps.setString(1, p.getNombre());
+            ps.setString(2, p.getCategoria());
+            ps.setDouble(3, p.getPrecio());
+            ps.setInt(4, p.getStock());
 
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean actualizar(Producto p) {
+        String sql = "UPDATE productos SET nombre = ?, categoria = ?, precio = ?, stock = ? WHERE id = ?";
+        try (Connection con = Conexion.conectar();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, p.getNombre());
+            ps.setString(2, p.getCategoria());
+            ps.setDouble(3, p.getPrecio());
+            ps.setInt(4, p.getStock());
+            ps.setInt(5, p.getId());
+
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean eliminar(int id) {
+        String sql = "DELETE FROM productos WHERE id = ?";
+        try (Connection con = Conexion.conectar();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();

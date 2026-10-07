@@ -10,7 +10,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         MainView mainView = new MainView();
-        Scene scene = new Scene(mainView.getRoot(), 750, 480);
+        Scene scene = new Scene(mainView.getRoot(), 820, 520);
 
         primaryStage.setTitle("Cooperativa Agraria Yalpa Limitada - JavaFX Desktop");
         primaryStage.setScene(scene);

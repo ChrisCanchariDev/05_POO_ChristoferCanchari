@@ -16,23 +16,15 @@ public class MainController {
         this.socioDAO = new SocioDAO();
     }
 
-    // --- MÉTODOS DE PRODUCTOS ---
-    public List<Producto> obtenerProductos() {
-        return productoDAO.listar();
-    }
+    // --- MÓDULO PRODUCTOS ---
+    public List<Producto> obtenerProductos() { return productoDAO.listar(); }
+    public boolean agregarProducto(Producto p) { return productoDAO.insertar(p); }
+    public boolean actualizarProducto(Producto p) { return productoDAO.actualizar(p); }
+    public boolean eliminarProducto(int id) { return productoDAO.eliminar(id); }
 
-    public boolean registrarProducto(String nombre, String categoria, double precio, int stock) {
-        Producto nuevoProducto = new Producto(0, nombre, categoria, precio, stock);
-        return productoDAO.insertar(nuevoProducto);
-    }
-
-    // --- MÉTODOS DE SOCIOS / REGISTROS ---
-    public List<Socio> obtenerSocios() {
-        return socioDAO.listar();
-    }
-
-    public boolean registrarSocio(String nombre, String apellido, String correo, String estado) {
-        Socio nuevoSocio = new Socio(0, nombre, apellido, correo, estado);
-        return socioDAO.insertar(nuevoSocio);
-    }
+    // --- MÓDULO SOCIOS ---
+    public List<Socio> obtenerSocios() { return socioDAO.listar(); }
+    public boolean agregarSocio(Socio s) { return socioDAO.insertar(s); }
+    public boolean actualizarSocio(Socio s) { return socioDAO.actualizar(s); }
+    public boolean eliminarSocio(int id) { return socioDAO.eliminar(id); }
 }

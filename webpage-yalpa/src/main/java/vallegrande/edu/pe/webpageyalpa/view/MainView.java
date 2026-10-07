@@ -1,7 +1,6 @@
 package vallegrande.edu.pe.webpageyalpa.view;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -11,52 +10,46 @@ import vallegrande.edu.pe.webpageyalpa.controller.MainController;
 import vallegrande.edu.pe.webpageyalpa.model.Producto;
 import vallegrande.edu.pe.webpageyalpa.model.Socio;
 
+import java.util.Optional;
+
 public class MainView {
     private BorderPane root;
     private StackPane contentArea;
 
     private VBox inicioView;
-    private VBox productosView;
     private VBox sociosView;
+    private VBox productosView;
 
-    private TableView<Producto> tableProductos;
-    private TableView<Socio> tableSocios;
     private MainController controller;
 
-    // Campos Formulario Productos
-    private TextField txtProdNombre;
-    private TextField txtProdCategoria;
-    private TextField txtProdPrecio;
-    private TextField txtProdStock;
+    // Campos Socios
+    private TableView<Socio> tableSocios;
+    private TextField txtSocId, txtSocNombre, txtSocApellido, txtSocDni, txtSocTelefono, txtSocEstado;
 
-    // Campos Formulario Socios (Mockup S10)
-    private TextField txtSocioNombre;
-    private TextField txtSocioApellido;
-    private TextField txtSocioCorreo;
-    private TextField txtSocioEstado;
+    // Campos Productos
+    private TableView<Producto> tableProductos;
+    private TextField txtProdId, txtProdNombre, txtProdCategoria, txtProdPrecio, txtProdStock;
 
     public MainView() {
         controller = new MainController();
         root = new BorderPane();
 
-        // 1. Barra de navegación superior
         HBox navBar = crearBarraNavegacion();
         root.setTop(navBar);
 
-        // 2. Área central
         contentArea = new StackPane();
-        contentArea.setPadding(new Insets(20));
+        contentArea.setPadding(new Insets(15));
 
         inicioView = crearVistaInicio();
-        productosView = crearVistaProductos();
         sociosView = crearVistaSocios();
+        productosView = crearVistaProductos();
 
         contentArea.getChildren().add(inicioView);
         root.setCenter(contentArea);
     }
 
     private HBox crearBarraNavegacion() {
-        HBox nav = new HBox(15);
+        HBox nav = new HBox(12);
         nav.setPadding(new Insets(12, 20, 12, 20));
         nav.setStyle("-fx-background-color: #1b4965; -fx-alignment: center-left;");
 
@@ -67,19 +60,25 @@ public class MainView {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         Button btnInicio = new Button("🏠 Inicio");
+        Button btnSocios = new Button("👨‍🌾 Socios");
         Button btnProductos = new Button("📦 Productos");
-        Button btnSocios = new Button("👤 Formulario Cliente");
 
         String btnStyle = "-fx-background-color: #2b6cb0; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px; -fx-cursor: hand; -fx-background-radius: 5px;";
         btnInicio.setStyle(btnStyle);
-        btnProductos.setStyle(btnStyle);
         btnSocios.setStyle(btnStyle);
+        btnProductos.setStyle(btnStyle);
 
         btnInicio.setOnAction(e -> cambiarVista(inicioView));
-        btnProductos.setOnAction(e -> cambiarVista(productosView));
-        btnSocios.setOnAction(e -> cambiarVista(sociosView));
+        btnSocios.setOnAction(e -> {
+            cargarSocios();
+            cambiarVista(sociosView);
+        });
+        btnProductos.setOnAction(e -> {
+            cargarProductos();
+            cambiarVista(productosView);
+        });
 
-        nav.getChildren().addAll(title, spacer, btnInicio, btnProductos, btnSocios);
+        nav.getChildren().addAll(title, spacer, btnInicio, btnSocios, btnProductos);
         return nav;
     }
 
@@ -88,7 +87,7 @@ public class MainView {
         contentArea.getChildren().add(vista);
     }
 
-    // --- VISTA 1: INICIO ---
+    // --- 1. INICIO ---
     private VBox crearVistaInicio() {
         VBox box = new VBox(20);
         box.setAlignment(Pos.CENTER);
@@ -102,13 +101,14 @@ public class MainView {
         VBox card = new VBox(12);
         card.setPadding(new Insets(20));
         card.setMaxWidth(520);
-        card.setStyle("-fx-background-color: #f7fafc; -fx-border-color: #e2e8f0; -fx-border-width: 2px; -fx-border-radius: 8px; -fx-background-radius: 8px;");
+        card.setStyle("-fx-background-color: #f7fafc; -fx-border-color: #e2e8f0; -fx-border-width: 2px; -fx-border-radius: 8px;");
 
         Label cardTitle = new Label("📌 Módulos del Sistema");
         cardTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 15px; -fx-text-fill: #2d3748;");
 
-        Label cardDesc = new Label("• Módulo 📦 Productos: Gestión del catálogo de la cooperativa.\n" +
-                "• Módulo 👤 Formulario S10: Registro e Inserción de usuarios según el mockup de clase.");
+        Label cardDesc = new Label("Navega utilizando la barra superior:\n\n" +
+                "• 👨‍🌾 Socios: Registro y control de socios de la cooperativa.\n" +
+                "• 📦 Productos: Gestión de cosechas y derivados de la cooperativa.");
         cardDesc.setWrapText(true);
         cardDesc.setStyle("-fx-font-size: 13px; -fx-text-fill: #4a5568;");
 
@@ -117,212 +117,173 @@ public class MainView {
         return box;
     }
 
-    // --- VISTA 2: PRODUCTOS ---
-    private VBox crearVistaProductos() {
-        VBox box = new VBox(15);
+    // --- 2. VISTA SOCIOS ---
+    private VBox crearVistaSocios() {
+        VBox box = new VBox(12);
 
-        Label titleLabel = new Label("Gestión de Productos");
+        Label titleLabel = new Label("Mantenimiento de Socios");
         titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1b4965;");
 
-        // Formulario
-        TitledPane formPane = new TitledPane();
-        formPane.setText("➕ Registrar Nuevo Producto");
-        formPane.setCollapsible(false);
+        GridPane form = new GridPane();
+        form.setHgap(10); form.setVgap(10);
+        form.setPadding(new Insets(10));
+        form.setStyle("-fx-background-color: #f0f4f8; -fx-background-radius: 5px;");
 
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(10));
+        txtSocId = new TextField(); txtSocId.setDisable(true);
+        txtSocNombre = new TextField(); txtSocNombre.setPromptText("Nombre");
+        txtSocApellido = new TextField(); txtSocApellido.setPromptText("Apellido");
+        txtSocDni = new TextField(); txtSocDni.setPromptText("DNI");
+        txtSocTelefono = new TextField(); txtSocTelefono.setPromptText("Teléfono");
+        txtSocEstado = new TextField(); txtSocEstado.setPromptText("Estado (Activo/Inactivo)");
 
-        txtProdNombre = new TextField();
-        txtProdCategoria = new TextField();
-        txtProdPrecio = new TextField();
-        txtProdStock = new TextField();
+        form.add(new Label("ID:"), 0, 0); form.add(txtSocId, 1, 0);
+        form.add(new Label("Nombre:"), 0, 1); form.add(txtSocNombre, 1, 1);
+        form.add(new Label("Apellido:"), 2, 0); form.add(txtSocApellido, 3, 0);
+        form.add(new Label("DNI:"), 2, 1); form.add(txtSocDni, 3, 1);
+        form.add(new Label("Teléfono:"), 4, 0); form.add(txtSocTelefono, 5, 0);
+        form.add(new Label("Estado:"), 4, 1); form.add(txtSocEstado, 5, 1);
 
-        Button btnRegistrar = new Button("💾 Registrar Producto");
-        btnRegistrar.setStyle("-fx-background-color: #2b8a3e; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;");
-        btnRegistrar.setOnAction(e -> registrarProducto());
+        HBox btnBox = new HBox(10);
+        Button btnAdd = new Button("➕ Registrar"); btnAdd.setStyle("-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold;");
+        Button btnUpd = new Button("✏️ Actualizar"); btnUpd.setStyle("-fx-background-color: #ffc107; -fx-text-fill: black; -fx-font-weight: bold;");
+        Button btnDel = new Button("🗑️ Eliminar"); btnDel.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-weight: bold;");
+        Button btnClr = new Button("🧹 Limpiar"); btnClr.setStyle("-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnBox.getChildren().addAll(btnAdd, btnUpd, btnDel, btnClr);
 
-        grid.add(new Label("Nombre:"), 0, 0);
-        grid.add(txtProdNombre, 1, 0);
-        grid.add(new Label("Categoría:"), 2, 0);
-        grid.add(txtProdCategoria, 3, 0);
-        grid.add(new Label("Precio (S/):"), 0, 1);
-        grid.add(txtProdPrecio, 1, 1);
-        grid.add(new Label("Stock:"), 2, 1);
-        grid.add(txtProdStock, 3, 1);
-        grid.add(btnRegistrar, 3, 2);
+        tableSocios = new TableView<>();
+        TableColumn<Socio, Integer> colId = new TableColumn<>("ID"); colId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        TableColumn<Socio, String> colNom = new TableColumn<>("Nombre"); colNom.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+        TableColumn<Socio, String> colApe = new TableColumn<>("Apellido"); colApe.setCellValueFactory(new PropertyValueFactory<>("apellido"));
+        TableColumn<Socio, String> colDni = new TableColumn<>("DNI"); colDni.setCellValueFactory(new PropertyValueFactory<>("dni"));
+        TableColumn<Socio, String> colTel = new TableColumn<>("Teléfono"); colTel.setCellValueFactory(new PropertyValueFactory<>("telefono"));
+        TableColumn<Socio, String> colEst = new TableColumn<>("Estado"); colEst.setCellValueFactory(new PropertyValueFactory<>("estado"));
+        tableSocios.getColumns().addAll(colId, colNom, colApe, colDni, colTel, colEst);
+        tableSocios.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        formPane.setContent(grid);
+        tableSocios.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
+            if (newSel != null) {
+                txtSocId.setText(String.valueOf(newSel.getId()));
+                txtSocNombre.setText(newSel.getNombre());
+                txtSocApellido.setText(newSel.getApellido());
+                txtSocDni.setText(newSel.getDni());
+                txtSocTelefono.setText(newSel.getTelefono());
+                txtSocEstado.setText(newSel.getEstado());
+            }
+        });
 
-        // Tabla
+        btnAdd.setOnAction(e -> {
+            Socio s = new Socio(0, txtSocNombre.getText(), txtSocApellido.getText(), txtSocDni.getText(), txtSocTelefono.getText(), txtSocEstado.getText());
+            if (controller.agregarSocio(s)) { cargarSocios(); limpiarSocForm(); }
+        });
+
+        btnUpd.setOnAction(e -> {
+            if (txtSocId.getText().isEmpty()) return;
+            Socio s = new Socio(Integer.parseInt(txtSocId.getText()), txtSocNombre.getText(), txtSocApellido.getText(), txtSocDni.getText(), txtSocTelefono.getText(), txtSocEstado.getText());
+            if (controller.actualizarSocio(s)) { cargarSocios(); limpiarSocForm(); }
+        });
+
+        btnDel.setOnAction(e -> {
+            if (txtSocId.getText().isEmpty()) return;
+            if (controller.eliminarSocio(Integer.parseInt(txtSocId.getText()))) { cargarSocios(); limpiarSocForm(); }
+        });
+
+        btnClr.setOnAction(e -> limpiarSocForm());
+
+        box.getChildren().addAll(titleLabel, form, btnBox, tableSocios);
+        VBox.setVgrow(tableSocios, Priority.ALWAYS);
+        return box;
+    }
+
+    // --- 3. VISTA PRODUCTOS ---
+    private VBox crearVistaProductos() {
+        VBox box = new VBox(12);
+
+        Label titleLabel = new Label("Mantenimiento de Productos");
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1b4965;");
+
+        GridPane form = new GridPane();
+        form.setHgap(10); form.setVgap(10);
+        form.setPadding(new Insets(10));
+        form.setStyle("-fx-background-color: #f0f4f8; -fx-background-radius: 5px;");
+
+        txtProdId = new TextField(); txtProdId.setDisable(true);
+        txtProdNombre = new TextField(); txtProdNombre.setPromptText("Nombre");
+        txtProdCategoria = new TextField(); txtProdCategoria.setPromptText("Categoría");
+        txtProdPrecio = new TextField(); txtProdPrecio.setPromptText("Precio");
+        txtProdStock = new TextField(); txtProdStock.setPromptText("Stock");
+
+        form.add(new Label("ID:"), 0, 0); form.add(txtProdId, 1, 0);
+        form.add(new Label("Nombre:"), 0, 1); form.add(txtProdNombre, 1, 1);
+        form.add(new Label("Categoría:"), 2, 0); form.add(txtProdCategoria, 3, 0);
+        form.add(new Label("Precio:"), 2, 1); form.add(txtProdPrecio, 3, 1);
+        form.add(new Label("Stock:"), 4, 0); form.add(txtProdStock, 5, 0);
+
+        HBox btnBox = new HBox(10);
+        Button btnAdd = new Button("➕ Registrar"); btnAdd.setStyle("-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold;");
+        Button btnUpd = new Button("✏️ Actualizar"); btnUpd.setStyle("-fx-background-color: #ffc107; -fx-text-fill: black; -fx-font-weight: bold;");
+        Button btnDel = new Button("🗑️ Eliminar"); btnDel.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-weight: bold;");
+        Button btnClr = new Button("🧹 Limpiar"); btnClr.setStyle("-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnBox.getChildren().addAll(btnAdd, btnUpd, btnDel, btnClr);
+
         tableProductos = new TableView<>();
-        TableColumn<Producto, Integer> colId = new TableColumn<>("ID");
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-
-        TableColumn<Producto, String> colNombre = new TableColumn<>("Nombre");
-        colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
-
-        TableColumn<Producto, String> colCat = new TableColumn<>("Categoría");
-        colCat.setCellValueFactory(new PropertyValueFactory<>("categoria"));
-
-        TableColumn<Producto, Double> colPrecio = new TableColumn<>("Precio (S/)");
-        colPrecio.setCellValueFactory(new PropertyValueFactory<>("precio"));
-
-        TableColumn<Producto, Integer> colStock = new TableColumn<>("Stock");
-        colStock.setCellValueFactory(new PropertyValueFactory<>("stock"));
-
-        tableProductos.getColumns().addAll(colId, colNombre, colCat, colPrecio, colStock);
+        TableColumn<Producto, Integer> colId = new TableColumn<>("ID"); colId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        TableColumn<Producto, String> colNom = new TableColumn<>("Nombre"); colNom.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+        TableColumn<Producto, String> colCat = new TableColumn<>("Categoría"); colCat.setCellValueFactory(new PropertyValueFactory<>("categoria"));
+        TableColumn<Producto, Double> colPre = new TableColumn<>("Precio (S/)"); colPre.setCellValueFactory(new PropertyValueFactory<>("precio"));
+        TableColumn<Producto, Integer> colStk = new TableColumn<>("Stock"); colStk.setCellValueFactory(new PropertyValueFactory<>("stock"));
+        tableProductos.getColumns().addAll(colId, colNom, colCat, colPre, colStk);
         tableProductos.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        cargarDatosProductos();
+        tableProductos.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
+            if (newSel != null) {
+                txtProdId.setText(String.valueOf(newSel.getId()));
+                txtProdNombre.setText(newSel.getNombre());
+                txtProdCategoria.setText(newSel.getCategoria());
+                txtProdPrecio.setText(String.valueOf(newSel.getPrecio()));
+                txtProdStock.setText(String.valueOf(newSel.getStock()));
+            }
+        });
 
-        box.getChildren().addAll(titleLabel, formPane, tableProductos);
+        btnAdd.setOnAction(e -> {
+            Producto p = new Producto(0, txtProdNombre.getText(), txtProdCategoria.getText(), Double.parseDouble(txtProdPrecio.getText()), Integer.parseInt(txtProdStock.getText()));
+            if (controller.agregarProducto(p)) { cargarProductos(); limpiarProdForm(); }
+        });
+
+        btnUpd.setOnAction(e -> {
+            if (txtProdId.getText().isEmpty()) return;
+            Producto p = new Producto(Integer.parseInt(txtProdId.getText()), txtProdNombre.getText(), txtProdCategoria.getText(), Double.parseDouble(txtProdPrecio.getText()), Integer.parseInt(txtProdStock.getText()));
+            if (controller.actualizarProducto(p)) { cargarProductos(); limpiarProdForm(); }
+        });
+
+        btnDel.setOnAction(e -> {
+            if (txtProdId.getText().isEmpty()) return;
+            if (controller.eliminarProducto(Integer.parseInt(txtProdId.getText()))) { cargarProductos(); limpiarProdForm(); }
+        });
+
+        btnClr.setOnAction(e -> limpiarProdForm());
+
+        box.getChildren().addAll(titleLabel, form, btnBox, tableProductos);
         VBox.setVgrow(tableProductos, Priority.ALWAYS);
         return box;
     }
 
-    // --- VISTA 3: MOCKUP SLIDE S10 (SOCIOS / USUARIOS) ---
-    private VBox crearVistaSocios() {
-        VBox mainContainer = new VBox(20);
-        mainContainer.setAlignment(Pos.TOP_CENTER);
-
-        // Tarjeta estilo Mockup exacto de la diapositiva S10
-        VBox formCard = new VBox(12);
-        formCard.setMaxWidth(500);
-        formCard.setPadding(new Insets(20));
-        formCard.setStyle("-fx-background-color: #ffffff; -fx-border-color: #cbd5e1; -fx-border-width: 1.5px; -fx-border-radius: 12px; -fx-background-radius: 12px;");
-
-        HBox headerBox = new HBox();
-        headerBox.setAlignment(Pos.CENTER_LEFT);
-
-        Label lblFormTitle = new Label("Formulario de Registro (JavaFX Desktop)");
-        lblFormTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #1e293b;");
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        Label lblMockupTag = new Label("UI Mockup S10");
-        lblMockupTag.setStyle("-fx-font-size: 11px; -fx-text-fill: #64748b;");
-
-        headerBox.getChildren().addAll(lblFormTitle, spacer, lblMockupTag);
-
-        String labelStyle = "-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: #334155; -fx-min-width: 90px;";
-        String inputStyle = "-fx-background-color: #f8fafc; -fx-border-color: #cbd5e1; -fx-border-radius: 6px; -fx-background-radius: 6px; -fx-padding: 8px; -fx-font-size: 13px;";
-
-        // Campos exactos de la diapositiva
-        HBox rowNombre = crearFilaInput("Nombre:", txtSocioNombre = new TextField(), "Carlos", labelStyle, inputStyle);
-        HBox rowApellido = crearFilaInput("Apellido:", txtSocioApellido = new TextField(), "Pérez", labelStyle, inputStyle);
-        HBox rowCorreo = crearFilaInput("Correo:", txtSocioCorreo = new TextField(), "carlos@gmail.com", labelStyle, inputStyle);
-        HBox rowEstado = crearFilaInput("Estado:", txtSocioEstado = new TextField(), "Activo", labelStyle, inputStyle);
-
-        Button btnRegistrar = new Button("[ REGISTRAR ]");
-        btnRegistrar.setMaxWidth(Double.MAX_VALUE);
-        btnRegistrar.setStyle("-fx-background-color: #0284c7; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 10px; -fx-background-radius: 8px; -fx-cursor: hand;");
-        btnRegistrar.setOnAction(e -> registrarSocio());
-
-        formCard.getChildren().addAll(headerBox, rowNombre, rowApellido, rowCorreo, rowEstado, btnRegistrar);
-
-        // Tabla de Socios
-        tableSocios = new TableView<>();
-        TableColumn<Socio, Integer> colId = new TableColumn<>("ID");
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-
-        TableColumn<Socio, String> colNom = new TableColumn<>("Nombre");
-        colNom.setCellValueFactory(new PropertyValueFactory<>("nombre"));
-
-        TableColumn<Socio, String> colApe = new TableColumn<>("Apellido");
-        colApe.setCellValueFactory(new PropertyValueFactory<>("apellido"));
-
-        TableColumn<Socio, String> colCor = new TableColumn<>("Correo");
-        colCor.setCellValueFactory(new PropertyValueFactory<>("correo"));
-
-        TableColumn<Socio, String> colEst = new TableColumn<>("Estado");
-        colEst.setCellValueFactory(new PropertyValueFactory<>("estado"));
-
-        tableSocios.getColumns().addAll(colId, colNom, colApe, colCor, colEst);
-        tableSocios.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-
-        cargarDatosSocios();
-
-        mainContainer.getChildren().addAll(formCard, tableSocios);
-        VBox.setVgrow(tableSocios, Priority.ALWAYS);
-        return mainContainer;
+    private void cargarSocios() {
+        tableSocios.setItems(FXCollections.observableArrayList(controller.obtenerSocios()));
     }
 
-    private HBox crearFilaInput(String labelText, TextField tf, String placeholder, String labelStyle, String inputStyle) {
-        HBox row = new HBox(10);
-        row.setAlignment(Pos.CENTER_LEFT);
-        Label lbl = new Label(labelText);
-        lbl.setStyle(labelStyle);
-        tf.setPromptText(placeholder);
-        tf.setStyle(inputStyle);
-        HBox.setHgrow(tf, Priority.ALWAYS);
-        row.getChildren().addAll(lbl, tf);
-        return row;
+    private void cargarProductos() {
+        tableProductos.setItems(FXCollections.observableArrayList(controller.obtenerProductos()));
     }
 
-    // Lógicas de Registro
-    private void registrarProducto() {
-        if (txtProdNombre.getText().isEmpty() || txtProdCategoria.getText().isEmpty() ||
-                txtProdPrecio.getText().isEmpty() || txtProdStock.getText().isEmpty()) {
-            mostrarAlerta(Alert.AlertType.WARNING, "Campos Vacíos", "Complete todos los campos del producto.");
-            return;
-        }
-
-        try {
-            double precio = Double.parseDouble(txtProdPrecio.getText().trim());
-            int stock = Integer.parseInt(txtProdStock.getText().trim());
-
-            if (controller.registrarProducto(txtProdNombre.getText().trim(), txtProdCategoria.getText().trim(), precio, stock)) {
-                mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Producto insertado en MySQL.");
-                txtProdNombre.clear(); txtProdCategoria.clear(); txtProdPrecio.clear(); txtProdStock.clear();
-                cargarDatosProductos();
-            }
-        } catch (NumberFormatException e) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "Precio y stock deben ser numéricos.");
-        }
+    private void limpiarSocForm() {
+        txtSocId.clear(); txtSocNombre.clear(); txtSocApellido.clear(); txtSocDni.clear(); txtSocTelefono.clear(); txtSocEstado.clear();
+        tableSocios.getSelectionModel().clearSelection();
     }
 
-    private void registrarSocio() {
-        String nom = txtSocioNombre.getText().trim();
-        String ape = txtSocioApellido.getText().trim();
-        String cor = txtSocioCorreo.getText().trim();
-        String est = txtSocioEstado.getText().trim();
-
-        if (nom.isEmpty() || ape.isEmpty() || cor.isEmpty() || est.isEmpty()) {
-            mostrarAlerta(Alert.AlertType.WARNING, "Campos Vacíos", "Complete todos los campos del formulario.");
-            return;
-        }
-
-        if (controller.registrarSocio(nom, ape, cor, est)) {
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Registro almacenado de forma permanente en MySQL.");
-            txtSocioNombre.clear(); txtSocioApellido.clear(); txtSocioCorreo.clear(); txtSocioEstado.clear();
-            cargarDatosSocios();
-        } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo realizar la inserción.");
-        }
+    private void limpiarProdForm() {
+        txtProdId.clear(); txtProdNombre.clear(); txtProdCategoria.clear(); txtProdPrecio.clear(); txtProdStock.clear();
+        tableProductos.getSelectionModel().clearSelection();
     }
 
-    private void cargarDatosProductos() {
-        ObservableList<Producto> lista = FXCollections.observableArrayList(controller.obtenerProductos());
-        tableProductos.setItems(lista);
-    }
-
-    private void cargarDatosSocios() {
-        ObservableList<Socio> lista = FXCollections.observableArrayList(controller.obtenerSocios());
-        tableSocios.setItems(lista);
-    }
-
-    private void mostrarAlerta(Alert.AlertType tipo, String titulo, String mensaje) {
-        Alert alert = new Alert(tipo);
-        alert.setTitle(titulo);
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
-        alert.showAndWait();
-    }
-
-    public BorderPane getRoot() {
-        return root;
-    }
+    public BorderPane getRoot() { return root; }
 }

@@ -18,14 +18,14 @@ public class SocioDAO {
              ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
-                Socio s = new Socio(
+                lista.add(new Socio(
                         rs.getInt("id"),
                         rs.getString("nombre"),
                         rs.getString("apellido"),
-                        rs.getString("correo"),
+                        rs.getString("dni"),
+                        rs.getString("telefono"),
                         rs.getString("estado")
-                );
-                lista.add(s);
+                ));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -33,17 +33,49 @@ public class SocioDAO {
         return lista;
     }
 
-    public boolean insertar(Socio socio) {
-        String sql = "INSERT INTO socios (nombre, apellido, correo, estado) VALUES (?, ?, ?, ?)";
-
+    public boolean insertar(Socio s) {
+        String sql = "INSERT INTO socios (nombre, apellido, dni, telefono, estado) VALUES (?, ?, ?, ?, ?)";
         try (Connection con = Conexion.conectar();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, socio.getNombre());
-            ps.setString(2, socio.getApellido());
-            ps.setString(3, socio.getCorreo());
-            ps.setString(4, socio.getEstado());
+            ps.setString(1, s.getNombre());
+            ps.setString(2, s.getApellido());
+            ps.setString(3, s.getDni());
+            ps.setString(4, s.getTelefono());
+            ps.setString(5, s.getEstado());
 
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean actualizar(Socio s) {
+        String sql = "UPDATE socios SET nombre = ?, apellido = ?, dni = ?, telefono = ?, estado = ? WHERE id = ?";
+        try (Connection con = Conexion.conectar();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, s.getNombre());
+            ps.setString(2, s.getApellido());
+            ps.setString(3, s.getDni());
+            ps.setString(4, s.getTelefono());
+            ps.setString(5, s.getEstado());
+            ps.setInt(6, s.getId());
+
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean eliminar(int id) {
+        String sql = "DELETE FROM socios WHERE id = ?";
+        try (Connection con = Conexion.conectar();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
